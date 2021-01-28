@@ -1,0 +1,53 @@
+version: "3.2"
+
+services:
+ # container name
+  postgres:
+   # build the image from Dockerfile
+    build:
+      context: ./
+
+    # bind mount volume for Postgres data
+    volumes:
+      - ./pg-data/:/var/lib/postgresql
+      - ./python-app:/var/www/html
+
+    # open port so host machine can access
+    ports:
+     - "5432:5432"
+
+    # configure Postgres environment variables
+    environment:
+      - POSTGRES_USER=michael.stanley
+      - POSTGRES_DB=twitter
+      - POSTGRES_PASSWORD=password
+
+
+    networks:
+      node_net:
+        ipv4_address: 172.28.1.4
+  pgadmin:
+      image: dpage/pgadmin4
+      restart: always
+      depends_on:
+        - postgres
+      ports:
+        - "53603:53603"
+        - "8080:80"
+      environment:
+        PGADMIN_DEFAULT_EMAIL: michael.stanley@iongroup.com
+        PGADMIN_DEFAULT_PASSWORD: root
+        PGADMIN_LISTEN_PORT: 80
+      volumes:
+        - ./pgadmin-data:/var/lib/pgadmin
+      links:
+        - "postgres:pgsql-server"
+
+
+
+networks:
+  node_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
